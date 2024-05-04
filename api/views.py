@@ -128,8 +128,10 @@ def profile_list(request):
       serializer = serializers.SchoolSerializer(data=request.data)
       if serializer.is_valid():
         data = serializer.save()
-        data.levels.set(*request.data.get('levels').split(','))
-        data.subjects.set(*request.data.get('subjects').split(','))
+        if(request.data.get('levels')):
+          data.levels.set(*request.data.get('levels').split(','))
+        if(request.data.get('subjects')):
+          data.subjects.set(*request.data.get('subjects').split(','))
         return Response(serializer.data)
           
     return Response(serializer.errors)
@@ -162,8 +164,11 @@ def profile_detail(request):
     if is_school(request):
       profile = models.School.objects.get(user=user)
 
-      profile.subjects.set(request.data.get('subjects').split(','))
-      profile.levels.set(*request.data.get('levels').split(','))
+      if(request.data.get('subjects')):
+        profile.subjects.set(request.data.get('subjects').split(','))
+
+      if(request.data.get('levels')):
+        profile.levels.set(*request.data.get('levels').split(','))
       
       serializer = serializers.SchoolSerializer(profile, data=request.data, partial=True)
       if serializer.is_valid():
