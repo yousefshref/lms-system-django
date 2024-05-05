@@ -168,7 +168,7 @@ def profile_detail(request):
         profile.subjects.set(request.data.get('subjects').split(','))
 
       if(request.data.get('levels')):
-        profile.levels.set(*request.data.get('levels').split(','))
+        profile.levels.set(request.data.get('levels').split(','))
       
       serializer = serializers.SchoolSerializer(profile, data=request.data, partial=True)
       if serializer.is_valid():
@@ -198,6 +198,40 @@ def website_list(request, user_pk):
       serializer.save()
       return Response(serializer.data)
     return Response(serializer.errors)
+
+
+
+
+
+
+@api_view(['GET', 'POST'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+def posts_list(request):
+  if request.method == 'GET':
+    posts = models.Post.objects.all().order_by('-id')
+    serializer = serializers.PostSerializer(posts, many=True)
+    return Response(serializer.data)
+
+  if request.method == 'POST':
+    serializer = serializers.PostSerializer(data=request.data)
+    if serializer.is_valid():
+      serializer.save()
+      return Response(serializer.data)
+    return Response(serializer.errors)
+
+
+
+@api_view(['DELETE'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+def post_detail(request, pk):
+  try:
+    post = models.Post.objects.get(pk=pk)
+  except models.Post.DoesNotExist:
+    return Response(status=status.HTTP_404_NOT_FOUND)
+  
+  if request.method == 'DELETE':
+    post.delete()
+    return Response({"success":True})
 
 
 

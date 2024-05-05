@@ -28,6 +28,11 @@ urlpatterns = [
     path('api/v1/website/<int:user_pk>/', views.website_list),
 
 
+    path('api/v1/posts/', views.posts_list),
+    path('api/v1/posts/<int:pk>/', views.post_detail),
+
+
+
     # path('api/v1/sign-up/', views.RegisterAPI.as_view()),
     # path('api/v1/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     # path('api/v1/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),

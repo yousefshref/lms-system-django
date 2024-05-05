@@ -29,7 +29,7 @@ class Subject(models.Model):
 
 class School(models.Model):
   user = models.OneToOneField(CustomUser, null=True, blank=True, on_delete=models.CASCADE, unique=True, related_name='school')
-  profile_image = models.ImageField(upload_to='schools/', blank=True, null=True)
+  profile_image = models.ImageField(upload_to='images/schools/', blank=True, null=True)
   name = models.CharField(max_length=100, blank=True, null=True)
   levels = models.ManyToManyField(Level, blank=True, null=True)
   subjects = models.ManyToManyField(Subject, blank=True, null=True)
@@ -42,7 +42,7 @@ class Teacher(models.Model):
   phone = models.CharField(max_length=20, blank=True, null=True)
   levels = models.ManyToManyField(Level, blank=True, null=True)
   subjects = models.ManyToManyField(Subject, blank=True, null=True)
-  profile_image = models.ImageField(upload_to='teachers/', blank=True, null=True)
+  profile_image = models.ImageField(upload_to='images/teachers/', blank=True, null=True)
 
   def __str__(self):
     return self.user.username
@@ -51,7 +51,7 @@ class Teacher(models.Model):
 class Student(models.Model):
   phone = models.CharField(max_length=20)
   levels = models.ManyToManyField(Level)
-  profile_image = models.ImageField(upload_to='students/', blank=True)
+  profile_image = models.ImageField(upload_to='images/students/', blank=True)
 
   def __str__(self):
     return self.user.username
@@ -73,9 +73,25 @@ class WebSite(models.Model):
 
 
 
+class Post(models.Model):
+  user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+  title = models.CharField(max_length=100)
+  description = models.TextField(null=True, blank=True)
+  image = models.ImageField(upload_to='images/posts/', null=True, blank=True)
+  created_at = models.DateTimeField(auto_now_add=True)
+  
+  def __str__(self):
+    return str(self.title)
+
+
+
+
+
+
+
 
 class Product(models.Model):
-  image = models.ImageField(upload_to='books/',null=True, blank=True)
+  image = models.ImageField(upload_to='images/books/',null=True, blank=True)
   levels = models.ManyToManyField(Level)
   name = models.CharField(max_length=100)
   description = models.TextField()

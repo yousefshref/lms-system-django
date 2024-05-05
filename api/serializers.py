@@ -41,6 +41,12 @@ class WebSiteSerializer(serializers.ModelSerializer):
     fields = '__all__'
 
 
+class PostSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = models.Post
+    fields = '__all__'
+
+
 class TeacherSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Teacher
