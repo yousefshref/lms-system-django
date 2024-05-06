@@ -87,6 +87,63 @@ class Post(models.Model):
 
 
 
+class FormType(models.Model):
+  name = models.CharField(max_length=100)
+
+  def __str__(self):
+    return self.name
+  
+
+class Form(models.Model):
+  name = models.CharField(max_length=100)
+  description = models.TextField(null=True, blank=True)
+  form_type = models.ForeignKey(FormType, on_delete=models.CASCADE)
+  created_at = models.DateTimeField(auto_now_add=True)
+  
+  def __str__(self):
+    return str(self.name)
+
+
+fields_types = (
+  ('text', 'text'),
+  ('number', 'number'),
+  ('email', 'email'),
+  ('date', 'date'),
+  ('time', 'time'),
+  ('checkbox', 'checkbox'),
+  ('textarea', 'textarea'),
+  ('file', 'file'),
+)
+
+class FormField(models.Model):
+  form = models.ForeignKey(Form, on_delete=models.CASCADE)
+  name = models.CharField(max_length=100)
+  type = models.CharField(max_length=100, choices=fields_types, default='text')
+  is_required = models.BooleanField(default=True)
+  created_at = models.DateTimeField(auto_now_add=True)
+  
+  def __str__(self):
+    return str(self.name)
+
+
+
+
+class FormApplication(models.Model):
+  user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
+  form = models.ForeignKey(Form, on_delete=models.CASCADE)
+  form_data = models.JSONField(null=True, blank=True)
+  created_at = models.DateTimeField(auto_now_add=True)
+
+  def __str__(self):
+    return str(self.form.name)
+
+  
+
+
+
+
+
+
 
 
 

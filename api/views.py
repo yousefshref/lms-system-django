@@ -4,6 +4,7 @@ from rest_framework.decorators import api_view, permission_classes, authenticati
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
 
 from rest_framework.authtoken.models import Token
 
@@ -60,28 +61,23 @@ def subjects(request):
 
 
 @api_view(['GET'])
-@authentication_classes([SessionAuthentication, TokenAuthentication])
-@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+@permission_classes([AllowAny])
 def check_user(request):
   try:
     school = models.School.objects.get(user=request.user)
     return Response({'school': serializers.SchoolSerializer(school).data})
   except:
-    pass
+    try:
+      teacher = models.Teacher.objects.get(user=request.user)
+      return Response({'teacher': serializers.TeacherSerializer(teacher).data})
+    except:
+      try:
+        student = models.Student.objects.get(user=request.user)
+        return Response({'student': serializers.StudentSerializer(student).data})
+      except:
+        return Response({'error': 'User not found'})
 
-  try:
-    teacher = models.Teacher.objects.get(user=request.user)
-    return Response({'teacher': serializers.TeacherSerializer(teacher).data})
-  except:
-    pass
-
-  try:
-    student = models.Student.objects.get(user=request.user)
-    return Response({'student': serializers.StudentSerializer(student).data})
-  except:
-    pass
-
-  return Response({'error': 'User not found'})
 
 
 def is_school(request):
@@ -205,7 +201,8 @@ def website_list(request, user_pk):
 
 
 @api_view(['GET', 'POST'])
-@authentication_classes([SessionAuthentication, TokenAuthentication])
+# @authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([AllowAny])
 def posts_list(request):
   if request.method == 'GET':
     posts = models.Post.objects.all().order_by('-id')
@@ -234,6 +231,179 @@ def post_detail(request, pk):
     return Response({"success":True})
 
 
+
+
+
+
+
+
+@api_view(['GET', 'POST'])
+def form_type_list(request):
+  if request.method == 'GET':
+    form_types = models.FormType.objects.all().order_by('-id')
+    serializer = serializers.FormTypeSerializer(form_types, many=True)
+    return Response(serializer.data)
+
+  if request.method == 'POST':
+    serializer = serializers.FormTypeSerializer(data=request.data)
+    if serializer.is_valid():
+      serializer.save()
+      return Response(serializer.data)
+    return Response(serializer.errors)
+  
+
+
+@api_view(['PUT', 'DELETE'])
+def form_type_detail(request, pk):
+  try:
+    form_type = models.FormType.objects.get(pk=pk)
+  except models.FormType.DoesNotExist:
+    return Response(status=status.HTTP_404_NOT_FOUND)
+
+  if request.method == 'PUT':
+    serializer = serializers.FormTypeSerializer(form_type, data=request.data, partial=True)
+    if serializer.is_valid():
+      serializer.save()
+      return Response(serializer.data)
+    return Response(serializer.errors)
+
+  if request.method == 'DELETE':
+    form_type.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+
+
+
+@api_view(['GET', 'POST'])
+def form_list(request):
+  if request.method == 'GET':
+    forms = models.Form.objects.all().order_by('-id')
+    serializer = serializers.FormSerializer(forms, many=True)
+    return Response(serializer.data)
+  
+  if request.method == 'POST':
+    serializer = serializers.FormSerializer(data=request.data)
+    if serializer.is_valid():
+      serializer.save()
+      return Response(serializer.data)
+    return Response(serializer.errors)
+
+
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def form_detail(request, pk):
+  try:
+    form = models.Form.objects.get(pk=pk)
+  except models.Form.DoesNotExist:
+    return Response(status=status.HTTP_404_NOT_FOUND)
+
+  if request.method == 'GET':
+    serializer = serializers.FormSerializer(form)
+    return Response(serializer.data)
+  
+  if request.method == 'PUT':
+    serializer = serializers.FormSerializer(form, data=request.data, partial=True)
+    if serializer.is_valid():
+      serializer.save()
+      return Response(serializer.data)
+    return Response(serializer.errors)
+  
+  if request.method == 'DELETE':
+    form.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+
+@api_view(['GET', 'POST'])
+def form_field_list(request):
+  if request.method == 'GET':
+    form_fields = models.FormField.objects.all()
+
+    if request.GET.get('form'):
+      form_fields = form_fields.filter(form__pk=request.GET.get('form'))
+
+    serializer = serializers.FormFieldSerializer(form_fields, many=True)
+    return Response(serializer.data)
+
+  if request.method == 'POST':
+    serializer = serializers.FormFieldSerializer(data=request.data)
+    if serializer.is_valid():
+      serializer.save()
+      return Response(serializer.data)
+    return Response(serializer.errors)
+  
+
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def form_field_detail(request, pk):
+  try:
+    form_field = models.FormField.objects.get(pk=pk)
+  except models.FormField.DoesNotExist:
+    return Response(status=status.HTTP_404_NOT_FOUND)
+
+  if request.method == 'GET':
+    serializer = serializers.FormFieldSerializer(form_field)
+    return Response(serializer.data)
+
+  if request.method == 'PUT':
+    serializer = serializers.FormFieldSerializer(form_field, data=request.data, partial=True)
+    if serializer.is_valid():
+      serializer.save()
+      return Response(serializer.data)
+    return Response(serializer.errors)
+  
+  if request.method == 'DELETE':
+    form_field.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+
+
+@api_view(['GET', 'POST'])
+def form_application_list(request):
+  if request.method == 'GET':
+    form_applications = models.FormApplication.objects.all()
+
+    if request.GET.get('form'):
+      form_applications = form_applications.filter(form__pk=request.GET.get('form'))
+
+    serializer = serializers.FormApplicationSerializer(form_applications, many=True)
+    return Response(serializer.data)
+
+  if request.method == 'POST':
+    serializer = serializers.FormApplicationSerializer(data=request.data)
+    if serializer.is_valid():
+      serializer.save()
+      return Response(serializer.data)
+    return Response(serializer.errors)
+  
+
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def form_application_detail(request, pk):
+  try:
+    form_application = models.FormApplication.objects.get(pk=pk)
+  except models.FormApplication.DoesNotExist:
+    return Response(status=status.HTTP_404_NOT_FOUND)
+  
+  if request.method == 'GET':
+    serializer = serializers.FormApplicationSerializer(form_application)  
+    return Response(serializer.data)
+  
+  if request.method == 'PUT':
+    serializer = serializers.FormApplicationSerializer(form_application, data=request.data, partial=True)
+    if serializer.is_valid():
+      serializer.save()
+      return Response(serializer.data)
+    return Response(serializer.errors)
+  
+  if request.method == 'DELETE':
+    form_application.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 

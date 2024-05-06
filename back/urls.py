@@ -32,6 +32,19 @@ urlpatterns = [
     path('api/v1/posts/<int:pk>/', views.post_detail),
 
 
+    
+    path('api/v1/form-types/', views.form_type_list),
+    path('api/v1/form-type/<int:pk>/', views.form_type_detail),
+
+    path('api/v1/forms/', views.form_list),
+    path('api/v1/form/<int:pk>/', views.form_detail),
+
+    path('api/v1/form-fields/', views.form_field_list),
+    path('api/v1/form-field/<int:pk>/', views.form_field_detail),
+
+    path('api/v1/form-applications/', views.form_application_list),
+    path('api/v1/form-application/<int:pk>/', views.form_application_detail),
+
 
     # path('api/v1/sign-up/', views.RegisterAPI.as_view()),
     # path('api/v1/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

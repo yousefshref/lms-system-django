@@ -47,6 +47,39 @@ class PostSerializer(serializers.ModelSerializer):
     fields = '__all__'
 
 
+
+
+
+
+class FormTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.FormType
+        fields = '__all__'
+
+
+class FormSerializer(serializers.ModelSerializer):
+    form_type_details = FormTypeSerializer(source='form_type', read_only=True)
+    class Meta:
+        model = models.Form
+        fields = '__all__'
+
+
+class FormFieldSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.FormField
+        fields = '__all__'
+
+
+class FormApplicationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.FormApplication
+        fields = '__all__'
+
+
+
+
+
+
 class TeacherSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Teacher
