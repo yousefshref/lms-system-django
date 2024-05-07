@@ -71,6 +71,7 @@ class FormFieldSerializer(serializers.ModelSerializer):
 
 
 class FormApplicationSerializer(serializers.ModelSerializer):
+    form_details = FormSerializer(source='form', read_only=True)
     class Meta:
         model = models.FormApplication
         fields = '__all__'
@@ -87,6 +88,7 @@ class TeacherSerializer(serializers.ModelSerializer):
 
 
 class StudentSerializer(serializers.ModelSerializer):
+    levels_details = LevelSerializer(source='levels', many=True, read_only=True)
     class Meta:
         model = models.Student
         fields = '__all__'

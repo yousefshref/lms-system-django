@@ -11,22 +11,23 @@ from rest_framework.authtoken.models import Token
 from api import models
 from api import serializers
 
+from django.db.models import Q
 
 
 
 
 
-@api_view(['POST'])
-def signup(request):
-  serializer = serializers.UserSerializer(data=request.data)
-  if serializer.is_valid():
-    serializer.save()
-    user = models.CustomUser.objects.get(username=request.data['username'])
-    user.set_password(request.data['password'])
-    user.save()
-    token = Token.objects.create(user=user)
-    return Response({'token': token.key, 'user': serializer.data})
-  return Response(serializer.errors, status=status.HTTP_200_OK)
+# @api_view(['POST'])
+# def signup(request):
+#   serializer = serializers.UserSerializer(data=request.data)
+#   if serializer.is_valid():
+#     serializer.save()
+#     user = models.CustomUser.objects.get(username=request.data['username'])
+#     user.set_password(request.data['password'])
+#     user.save()
+#     token = Token.objects.create(user=user)
+#     return Response({'token': token.key, 'user': serializer.data})
+#   return Response(serializer.errors, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 def login(request):
@@ -58,25 +59,26 @@ def subjects(request):
 
 
 
+@api_view(['GET'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def get_school(request):
+  school = models.School.objects.get(user=request.user)
+  serializer = serializers.SchoolSerializer(school)
+  return Response(serializer.data)
 
 
 @api_view(['GET'])
-@authentication_classes([TokenAuthentication])
-@permission_classes([AllowAny])
-def check_user(request):
-  try:
-    school = models.School.objects.get(user=request.user)
-    return Response({'school': serializers.SchoolSerializer(school).data})
-  except:
-    try:
-      teacher = models.Teacher.objects.get(user=request.user)
-      return Response({'teacher': serializers.TeacherSerializer(teacher).data})
-    except:
-      try:
-        student = models.Student.objects.get(user=request.user)
-        return Response({'student': serializers.StudentSerializer(student).data})
-      except:
-        return Response({'error': 'User not found'})
+def get_student_or_parent(request):
+  phone = request.GET.get('phone')
+
+  if models.Student.objects.filter(
+    Q(phone=phone) | Q(parent_phone=phone)
+  ).exists():
+    student = models.Student.objects.get(phone=phone)
+    serializer = serializers.StudentSerializer(student)
+    return Response(serializer.data)
+  return Response({"notExist":True})
 
 
 
@@ -410,360 +412,47 @@ def form_application_detail(request, pk):
 
 
 
-
-# class RegisterAPI(APIView):
-#     permission_classes = []
-#     serializer_class = serializers.UserSerializer
-
-#     def post(self, request, format=None):
-#       serializer = self.serializer_class(data=request.data)
-#       if serializer.is_valid():
-#           user = serializer.save()
-#           user.set_password(serializer.validated_data['password'])
-#           user.save()
-#           return Response(serializer.data)
-#       return Response(serializer.errors)
-
-
-
-
-# @api_view(['GET'])
-# # @authentication_classes([SessionAuthentication, TokenAuthentication])
-# # @permission_classes([IsAuthenticated])
-# def check_user(request):
-#   try:
-#     school = models.School.objects.get(user=request.user)
-#     return Response({'school': serializers.SchoolSerializer(school).data})
-#   except:
-#     pass
-
-#   try:
-#     teacher = models.Teacher.objects.get(user=request.user)
-#     return Response({'teacher': serializers.TeacherSerializer(teacher).data})
-#   except:
-#     pass
-
-#   try:
-#     student = models.Student.objects.get(user=request.user)
-#     return Response({'student': serializers.StudentSerializer(student).data})
-#   except:
-#     pass
-
-#   return Response({'error': 'User not found'})
-
-
-
-
-# def is_school(request):
-#   try:
-#     school = models.School.objects.get(user=request.user)
-#     return True
-#   except:
-#     return False
-  
-# def is_teacher(request):
-#   try:
-#     teacher = models.Teacher.objects.get(user=request.user)
-#     return True
-#   except:
-#     return False
-  
-# def is_student(request):
-#   try:
-#     student = models.Student.objects.get(user=request.user)
-#     return True
-#   except:
-#     return False
-
-
-
-
-
 @api_view(['GET', 'POST'])
-# @permission_classes([IsAuthenticated])
-def school_list(request):
-  if request.method == 'GET':
-    school = models.School.objects.get(user=request.user)
-    serializer = serializers.SchoolSerializer(school)
-    return Response(serializer.data)
-
-  elif request.method == 'POST':
-    serializer = serializers.SchoolSerializer(data=request.data)
-    if serializer.is_valid():
-      serializer.save()
-      return Response(serializer.data)
-    return Response(serializer.errors)
-
-
-@api_view(['GET', 'PUT', 'DELETE'])
-@permission_classes([IsAuthenticated])
-def school_detail(request, pk):
-  try:
-    school = models.School.objects.get(pk=pk)
-  except models.School.DoesNotExist:
-    return Response(status=status.HTTP_404_NOT_FOUND)
-  
-  if request.method == 'GET':
-    serializer = serializers.SchoolSerializer(school)
-    return Response(serializer.data)
-  
-  elif request.method == 'PUT':
-    serializer = serializers.SchoolSerializer(school, data=request.data, partial=True)
-    if serializer.is_valid():
-      serializer.save()
-      return Response(serializer.data)
-    return Response(serializer.errors)
-  
-  elif request.method == 'DELETE':
-    school.delete()
-    return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-
-
-
-
-@api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
-def teacher_list(request):
-  if request.method == 'GET':
-    teachers = models.Teacher.objects.all()
-    serializer = serializers.TeacherSerializer(teachers, many=True)
-    return Response(serializer.data)
-
-  elif request.method == 'POST':
-    serializer = serializers.TeacherSerializer(data=request.data)
-    if serializer.is_valid():
-      serializer.save()
-      return Response(serializer.data)
-    return Response(serializer.errors)
-
-
-@api_view(['GET', 'PUT', 'DELETE'])
-@permission_classes([IsAuthenticated])
-def teacher_detail(request, pk):
-  try:
-    teacher = models.Teacher.objects.get(pk=pk)
-  except models.Teacher.DoesNotExist:
-    return Response(status=status.HTTP_404_NOT_FOUND)
-  
-  if request.method == 'GET':
-    serializer = serializers.TeacherSerializer(teacher)
-    return Response(serializer.data)
-  
-  elif request.method == 'PUT':
-    serializer = serializers.TeacherSerializer(teacher, data=request.data, partial=True)
-    if serializer.is_valid():
-      serializer.save()
-      return Response(serializer.data)
-    return Response(serializer.errors)
-  
-  elif request.method == 'DELETE':
-    teacher.delete()
-    return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-
-@api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
 def student_list(request):
   if request.method == 'GET':
-    students = models.Student.objects.all()
+    students = models.Student.objects.all().order_by('-id')
     serializer = serializers.StudentSerializer(students, many=True)
     return Response(serializer.data)
-
-  elif request.method == 'POST':
+  
+  if request.method == 'POST':
     serializer = serializers.StudentSerializer(data=request.data)
     if serializer.is_valid():
       serializer.save()
       return Response(serializer.data)
     return Response(serializer.errors)
+  
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
-@permission_classes([IsAuthenticated])
 def student_detail(request, pk):
   try:
     student = models.Student.objects.get(pk=pk)
   except models.Student.DoesNotExist:
     return Response(status=status.HTTP_404_NOT_FOUND)
-  
+
   if request.method == 'GET':
     serializer = serializers.StudentSerializer(student)
     return Response(serializer.data)
   
-  elif request.method == 'PUT':
+  if request.method == 'PUT':
     serializer = serializers.StudentSerializer(student, data=request.data, partial=True)
     if serializer.is_valid():
       serializer.save()
       return Response(serializer.data)
     return Response(serializer.errors)
   
-  elif request.method == 'DELETE':
+  if request.method == 'DELETE':
     student.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 
 
-
-
-@api_view(['GET'])
-def website_get_or_create(request):
-  if request.method == 'GET':
-    pk = request.GET.get('pk', None)
-    try:
-      if pk:
-        website = models.WebSite.objects.get(user__pk=pk)
-      else:
-        website = models.WebSite.objects.get(user__pk=request.user.pk)
-    except models.WebSite.DoesNotExist:
-      if not pk:
-        website = models.WebSite.objects.create(user=request.user)
-
-    serializer = serializers.WebSiteSerializer(website)
-    return Response(serializer.data)
-
-
-@api_view(['PUT'])
-@permission_classes([IsAuthenticated])
-def website_update(request):
-  if request.method == 'PUT':
-    website = models.WebSite.objects.get(user__pk=request.user.pk)
-    serializer = serializers.WebSiteSerializer(website, data=request.data, partial=True)
-    if serializer.is_valid():
-      serializer.save()
-      return Response(serializer.data)
-    return Response(serializer.errors)
-
-
-
-
-
-
-@api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
-def product_list(request):
-  if request.method == 'GET':
-    products = models.Product.objects.all()
-    serializer = serializers.ProductSerializer(products, many=True)
-    return Response(serializer.data)
-
-  elif request.method == 'POST':
-    serializer = serializers.ProductSerializer(data=request.data)
-    if serializer.is_valid():
-      serializer.save()
-      return Response(serializer.data)
-    return Response(serializer.errors)
-
-
-@api_view(['GET', 'PUT', 'DELETE'])
-@permission_classes([IsAuthenticated])
-def product_detail(request, pk):
-  try:
-    product = models.Product.objects.get(pk=pk)
-  except models.Product.DoesNotExist:
-    return Response(status=status.HTTP_404_NOT_FOUND)
-  
-  if request.method == 'GET':
-    serializer = serializers.ProductSerializer(product)
-    return Response(serializer.data)
-  
-  elif request.method == 'PUT':
-    serializer = serializers.ProductSerializer(product, data=request.data, partial=True)
-    if serializer.is_valid():
-      serializer.save()
-      return Response(serializer.data)
-    return Response(serializer.errors)
-  
-  elif request.method == 'DELETE':
-    product.delete()
-    return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-
-
-@api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
-def order_list(request):
-  if request.method == 'GET':
-    orders = models.Order.objects.all()
-    serializer = serializers.OrderSerializer(orders, many=True)
-    return Response(serializer.data)
-
-  elif request.method == 'POST':
-    serializer = serializers.OrderSerializer(data=request.data)
-    if serializer.is_valid():
-      serializer.save()
-      return Response(serializer.data)
-    return Response(serializer.errors)
-
-
-@api_view(['GET', 'PUT', 'DELETE'])
-@permission_classes([IsAuthenticated])
-def order_detail(request, pk):
-  try:
-    order = models.Order.objects.get(pk=pk)
-  except models.Order.DoesNotExist:
-    return Response(status=status.HTTP_404_NOT_FOUND)
-  
-  if request.method == 'GET':
-    serializer = serializers.OrderSerializer(order)
-    return Response(serializer.data)
-  
-  elif request.method == 'PUT':
-    serializer = serializers.OrderSerializer(order, data=request.data, partial=True)
-    if serializer.is_valid():
-      serializer.save()
-      return Response(serializer.data)
-    return Response(serializer.errors)
-  
-  elif request.method == 'DELETE':
-    order.delete()
-    return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-
-
-
-@api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
-def cart_list(request):
-  if request.method == 'GET':
-    carts = models.Cart.objects.filter(user=request.user)
-    serializer = serializers.CartSerializer(carts, many=True)
-    return Response(serializer.data)
-
-  elif request.method == 'POST':
-    serializer = serializers.CartSerializer(data=request.data)
-    if serializer.is_valid():
-      serializer.save(user=request.user)
-      return Response(serializer.data)
-    return Response(serializer.errors)
-
-
-@api_view(['GET', 'PUT', 'DELETE'])
-@permission_classes([IsAuthenticated])
-def cart_detail(request, pk):
-  try:
-    cart = models.Cart.objects.get(pk=pk)
-  except models.Cart.DoesNotExist:
-    return Response(status=status.HTTP_404_NOT_FOUND)
-
-  if request.method == 'GET':
-    serializer = serializers.CartSerializer(cart)
-    return Response(serializer.data)
-
-  elif request.method == 'PUT':
-    serializer = serializers.CartSerializer(cart, data=request.data, partial=True)
-    if serializer.is_valid():
-      serializer.save()
-      return Response(serializer.data)
-    return Response(serializer.errors)
-
-  elif request.method == 'DELETE':
-    cart.delete()
-    return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 

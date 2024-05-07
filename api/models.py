@@ -38,6 +38,27 @@ class School(models.Model):
     return str(self.name)
 
 
+
+
+class Student(models.Model):
+  profile_image = models.ImageField(upload_to='images/students/', blank=True)
+  name = models.CharField(max_length=100, unique=True, db_index=True)
+  phone = models.CharField(max_length=20, unique=True, db_index=True, null=True, blank=True)
+  email = models.EmailField(unique=True, db_index=True, null=True, blank=True)
+  birth_date = models.DateField()
+  levels = models.ManyToManyField(Level)
+  parent_phone = models.CharField(max_length=20)
+  address = models.CharField(max_length=100, null=True, blank=True)
+
+
+  def __str__(self):
+    return str(self.name)
+
+
+
+
+
+
 class Teacher(models.Model):
   phone = models.CharField(max_length=20, blank=True, null=True)
   levels = models.ManyToManyField(Level, blank=True, null=True)
@@ -46,16 +67,6 @@ class Teacher(models.Model):
 
   def __str__(self):
     return self.user.username
-
-
-class Student(models.Model):
-  phone = models.CharField(max_length=20)
-  levels = models.ManyToManyField(Level)
-  profile_image = models.ImageField(upload_to='images/students/', blank=True)
-
-  def __str__(self):
-    return self.user.username
-
 
 
 
