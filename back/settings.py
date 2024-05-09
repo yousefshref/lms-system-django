@@ -110,7 +110,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'back.urls'
 
-AUTH_USER_MODEL = 'api.CustomUser'
+# AUTH_USER_MODEL = 'api.CustomUser'
 
 TEMPLATES = [
     {
