@@ -125,7 +125,7 @@ class LevelDetail(APIView):
     def delete(self, request, pk):
         level = self.get_object(pk)
         level.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({'success': True})
 
 
 class StudentList(APIView):
