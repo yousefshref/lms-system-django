@@ -26,9 +26,12 @@ urlpatterns = [
 
     path('api/v1/students/', views.StudentList.as_view()),
     path('api/v1/students/<int:pk>/', views.StudentDetail.as_view()),
+    path('api/v1/students/excel/', views.send_students_with_excel_sheet),
 
     path('api/v1/students-images/', views.StudentImageList.as_view()),
     path('api/v1/students-images/<int:pk>/', views.StudentImageDetail.as_view()),
+
+
 
     # path('api/v1/levels/', views.levels),
     # path('api/v1/subjects/', views.subjects),

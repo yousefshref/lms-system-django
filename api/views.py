@@ -133,7 +133,7 @@ class StudentList(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        students = models.Student.objects.all()
+        students = models.Student.objects.all().order_by('-id')
         serializer = serializers.StudentSerializer(students, many=True)
         return Response(serializer.data)
 
@@ -222,9 +222,40 @@ class StudentImageDetail(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+def create_user(username, password):
+    user = User.objects.create(username=username)
+    user.set_password(str(password))
+    user.save()
+    return user
 
 
 
+import pandas as pd
+
+@api_view(['POST'])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def send_students_with_excel_sheet(request):
+    excel_file = request.data['file']
+    df = pd.read_excel(excel_file)
+    for index, row in df.iterrows():
+        student = row.to_dict()
+        level = models.Level.objects.get(name=student['level'])
+        student['level'] = level
+        
+        try:
+            # create user
+            username = f"{str(student['full_name']).replace(' ', '_')}_{str(student['national_id_number'])[:4]}"
+            password = student['national_id_number']
+            user = create_user(username, password)
+            student['user'] = user
+
+            # create student profile
+            student_instance = models.Student.objects.create(**student)
+        except:
+            pass
+
+    return Response({"success":True})
 
 
 
