@@ -32,37 +32,16 @@ urlpatterns = [
     path('api/v1/students-images/<int:pk>/', views.StudentImageDetail.as_view()),
 
 
+    path('api/v1/forms/', views.form_list),
+    path('api/v1/forms/<int:pk>/', views.form_detail),
 
-    # path('api/v1/levels/', views.levels),
-    # path('api/v1/subjects/', views.subjects),
+    path('api/v1/form-fields/', views.form_field_list),
+    path('api/v1/form-fields/<int:pk>/', views.form_field_detail),
 
-    # path('api/v1/school/', views.get_school),
-    # path('api/v1/student/', views.get_student_or_parent),
+    path('api/v1/form-answers/', views.form_answer_parent_list),
+    path('api/v1/form-answers/<int:pk>/', views.form_answer_parent_detail),
 
-    # path('api/v1/profile/', views.profile_list),
-    # path('api/v1/profile/update/', views.profile_detail),
-
-    # path('api/v1/website/<int:user_pk>/', views.website_list),
-
-
-    # path('api/v1/posts/', views.posts_list),
-    # path('api/v1/posts/<int:pk>/', views.post_detail),
-
-    
-    # path('api/v1/form-types/', views.form_type_list),
-    # path('api/v1/form-type/<int:pk>/', views.form_type_detail),
-
-    # path('api/v1/forms/', views.form_list),
-    # path('api/v1/form/<int:pk>/', views.form_detail),
-
-    # path('api/v1/form-fields/', views.form_field_list),
-    # path('api/v1/form-field/<int:pk>/', views.form_field_detail),
-
-    # path('api/v1/form-applications/', views.form_application_list),
-    # path('api/v1/form-application/<int:pk>/', views.form_application_detail),
-
-
-    # path('api/v1/students/', views.student_list),
-    # path('api/v1/student/<int:pk>/', views.student_detail)
+    path('api/v1/answers/', views.form_answer_list),
+    path('api/v1/answers/<int:pk>/', views.form_answer_detail),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
