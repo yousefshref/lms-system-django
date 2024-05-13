@@ -351,6 +351,11 @@ def form_answer_parent_list(request):
         if request.GET.get('form_id'):
             form_answers = form_answers.filter(form_id=request.GET.get('form_id'))
 
+        if request.GET.get('student_id'):
+            form_answers = form_answers.filter(
+                Q(user__id=request.GET.get('student_id')) & Q(form__is_student_information=True)
+            )
+
         serializer = serializers.FormAnswerParentSerializer(form_answers, many=True)
         return Response(serializer.data)
     

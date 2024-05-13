@@ -43,9 +43,20 @@ class FormFieldSerializer(serializers.ModelSerializer):
 
 class FormSerializer(serializers.ModelSerializer):
   form_fields = FormFieldSerializer(source='fields', many=True, read_only=True)
+  levels = serializers.PrimaryKeyRelatedField(
+    many=True,
+    queryset=models.Level.objects.all(),
+    required=False
+)
   class Meta:
     model = models.Form
     fields = '__all__'
+    
+  def create(self, validated_data):
+    levels_data = validated_data.pop('levels', [])
+    form_answer_parent = models.Form.objects.create(**validated_data)
+    form_answer_parent.levels.set(levels_data)
+    return form_answer_parent
 
 
 
@@ -56,11 +67,13 @@ class FormAnswerSerializer(serializers.ModelSerializer):
     fields = '__all__'
 
 class FormAnswerParentSerializer(serializers.ModelSerializer):
-  form_details = FormSerializer(source='form', read_only=True)
-  user_details = UserSerializer(source='user', read_only=True)
-  answers_details = FormAnswerSerializer(source='answers', many=True, read_only=True)
+  form_details = FormSerializer(source='form', read_only=True, required=False)
+  user_details = UserSerializer(source='user', read_only=True, required=False)
+  answers_details = FormAnswerSerializer(source='answers', many=True, read_only=True, required=False)
   class Meta:
     model = models.FormAnswerParent
     fields = '__all__'
+
+
 
 

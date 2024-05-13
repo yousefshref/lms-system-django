@@ -29,7 +29,7 @@ class Student(models.Model):
     father_phone = models.CharField(max_length=255, null=True, blank=True)
     mother_phone = models.CharField(max_length=255, null=True, blank=True)
     birthday = models.DateField(null=True, blank=True)
-    gender = models.CharField( choices=gender, max_length=255, null=True, blank=True)
+    gender = models.CharField(choices=gender, max_length=255, null=True, blank=True)
 
     def __str__(self):
         return str(self.full_name) + " " + str(self.pk)
@@ -56,6 +56,8 @@ class StudentImage(models.Model):
 class Form(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
+    levels = models.ManyToManyField(Level, null=True, blank=True)
+    is_student_information = models.BooleanField(default=False)
     created_at = models.DateField(auto_now_add=True, null=True, blank=True)
 
     def __str__(self):
